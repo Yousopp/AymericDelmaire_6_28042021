@@ -12,7 +12,9 @@ const app = express();
 
 mongoose.connect('mongodb+srv://aymeric:Veget@51@cluster0.nnu7k.mongodb.net/test',
   { useNewUrlParser: true,
-    useUnifiedTopology: true })
+    useUnifiedTopology: true,
+    useCreateIndex: true
+    })
   .then(() => console.log('Connexion à MongoDB réussie !'))
   .catch(() => console.log('Connexion à MongoDB échouée !'));
 
