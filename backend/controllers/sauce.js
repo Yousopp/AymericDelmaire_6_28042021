@@ -1,5 +1,24 @@
 const Sauce = require('../models/sauce');
 
+exports.createSauce = (req, res, next) => {
+  const sauce = new Sauce({
+    ...req.body
+  });
+  sauce.save().then(
+    () => {
+      res.status(201).json({
+        message: 'Sauce enregistrée !'
+      });
+    }
+  ).catch(
+    (error) => {
+      res.status(400).json({
+        error: error
+      });
+    }
+  );
+};
+
 exports.getOneSauce = (req, res, next) => {
   Sauce.findOne({
     _id: req.params.id
