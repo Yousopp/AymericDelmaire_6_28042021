@@ -1,9 +1,11 @@
 const Sauce = require('../models/sauce');
 
 exports.createSauce = (req, res, next) => {
+  const reqBodyParse = JSON.parse(req.body);//en cours de test
   const sauce = new Sauce({
-    ...req.body
+    ...reqBodyParse//idem
   });
+  console.log(req.body);//idem
   sauce.save().then(
     () => {
       res.status(201).json({
