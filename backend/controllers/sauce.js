@@ -5,6 +5,8 @@ exports.createSauce = (req, res, next) => {
   const sauceObject = JSON.parse(req.body.sauce);
   const sauce = new Sauce({
     ...sauceObject,
+    likes: 0,
+    dislikes: 0,
     imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
   });
   sauce.save()
@@ -67,19 +69,15 @@ exports.getAllSauce = (req, res, next) => {
 };
 
 exports.likeSauce = (req, res, next) => {
-  // Like présent dans le body
   let like = req.body.like
-  // On prend le userID
   let userId = req.body.userId
-  // On prend l'id de la sauce
   let sauceId = req.params.id
-
   if (like === 1) { // L'utilisateur like la sauce
-    Sauce.updateOne({
+    Sauce.updateOne({ // méthode/fonction utilisable grâce à mongoose
         _id: sauceId
       }, {
         // On push l'utilisateur et on incrémente le compteur de 1
-        $push: {
+        $push: { // Méthode de mongoose/mongoDB
           usersLiked: userId
         },
         $inc: {
@@ -87,7 +85,7 @@ exports.likeSauce = (req, res, next) => {
         }, // On incrémente de 1
       })
       .then(() => res.status(200).json({
-        message: 'j\'aime ajouté !'
+        message: 'Sauce likée !'// Les messages sont visibles uniquement dans le backend
       }))
       .catch((error) => res.status(400).json({
         error
@@ -108,14 +106,14 @@ exports.likeSauce = (req, res, next) => {
       )
       .then(() => {
         res.status(200).json({
-          message: 'Dislike ajouté !'
+          message: 'Sauce dislikée !'
         })
       })
       .catch((error) => res.status(400).json({
         error
       }))
   }
-  if (like === 0) { // Si il s'agit d'annuler un like ou un dislike
+  if (like === 0) { // Si il s'agit d'annuler un like / dislike
     Sauce.findOne({
         _id: sauceId
       })
@@ -132,7 +130,7 @@ exports.likeSauce = (req, res, next) => {
               }, // On incrémente de -1
             })
             .then(() => res.status(200).json({
-              message: 'Like retiré !'
+              message: 'Like annulé !'
             }))
             .catch((error) => res.status(400).json({
               error
@@ -150,7 +148,7 @@ exports.likeSauce = (req, res, next) => {
               }, // On incrémente de -1
             })
             .then(() => res.status(200).json({
-              message: 'Dislike retiré !'
+              message: 'Dislike annulé !'
             }))
             .catch((error) => res.status(400).json({
               error
