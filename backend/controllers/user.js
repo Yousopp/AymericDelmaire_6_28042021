@@ -2,7 +2,9 @@ const User = require('../models/user');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const validator = require("email-validator");
+const dotenv = require('dotenv').config();
 
+// Utilisation du plugin email-validator pour validé l'email de l'utilisateur pendant l'inscription.
 exports.signupUser = (req, res, next) => {
   const isValidateEmail = validator.validate(req.body.email)
   if(!isValidateEmail) {
@@ -11,9 +13,6 @@ exports.signupUser = (req, res, next) => {
     });
     res.end('Le format de l\'Email est incorrect.');
   } else {
-    const messageToSearchWith = new Message({ name });
-    messageToSearchWith.encryptFieldsSync();
-    const results = await Message.find({ name: messageToSearchWith.name });
     bcrypt.hash(req.body.password, 10)
       .then(hash => {
         const user = new User({
@@ -28,8 +27,11 @@ exports.signupUser = (req, res, next) => {
     }
 };
 
+// Utilisation de mongoose-field-encryption pour encrypter l'email de l'utilisateur.
 exports.loginUser = (req, res, next) => {
-  User.findOne({ email: req.body.email })
+  const userToSearchWith = new User({ email: req.body.email })
+  userToSearchWith.encryptFieldsSync();
+  User.findOne({ email: userToSearchWith.email })
     .then(user => {
       if (!user) {
         return res.status(401).json({ error: 'Utilisateur non trouvé !' });
@@ -43,7 +45,7 @@ exports.loginUser = (req, res, next) => {
             userId: user._id,
             token: jwt.sign(
               { userId: user._id },
-              'RANDOM_TOKEN_SECRET',
+              process.env.TOKEN_SECRET,
               { expiresIn: '24h' }
             )
           });

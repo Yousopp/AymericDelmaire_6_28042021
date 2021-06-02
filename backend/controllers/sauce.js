@@ -73,26 +73,34 @@ exports.likeSauce = (req, res, next) => { // L'utilisateur like/unlike la sauce
   let userId = req.body.userId
   let sauceId = req.params.id
   if (like === 1) { // L'utilisateur like la sauce
-    Sauce.updateOne({ // méthode/fonction utilisable grâce à mongoose
-        _id: sauceId
-      }, {
-        // On push l'utilisateur et on incrémente le compteur de 1
-        $push: { // Méthode de mongoose/mongoDB
-          usersLiked: userId
-        },
-        $inc: {
-          likes: +1
-        }, // On incrémente de 1
-      })
-      .then(() => res.status(200).json({
-        message: 'Sauce likée !'// Les messages sont visibles uniquement dans le backend
-      }))
-      .catch((error) => res.status(400).json({
-        error
-      }))
+    Sauce.findOne( { usersLiked: userId, _id: sauceId})// On vérifie que l'utilisateur n'a pas déjà liké
+    .then((sauce) => {// Si c'est déjà liké, on ne fait rien
+      if (!sauce) {// Si ce n'est pas liké on lance la fonction de like
+        Sauce.updateOne({ // méthode/fonction utilisable grâce à mongoose
+          _id: sauceId
+        }, {
+          // On push l'utilisateur et on incrémente le compteur de 1
+          $push: { // Méthode de mongoose/mongoDB
+            usersLiked: userId
+          },
+          $inc: {
+            likes: +1
+          }, // On incrémente de 1
+        })
+        .then(() => res.status(200).json({
+          message: 'Sauce likée !'// Les messages sont visibles uniquement dans le backend
+        }))
+        .catch((error) => res.status(400).json({
+          error
+        }))
+      }
+    })
   }
   if (like === -1) {
-    Sauce.updateOne( // L'utilisateur dislike la sauce
+    Sauce.findOne( { usersDisliked: userId, _id: sauceId})
+    .then((sauce) => {
+      if (!sauce) {
+        Sauce.updateOne( // L'utilisateur dislike la sauce
         {
           _id: sauceId
         }, {
@@ -112,6 +120,8 @@ exports.likeSauce = (req, res, next) => { // L'utilisateur like/unlike la sauce
       .catch((error) => res.status(400).json({
         error
       }))
+      }
+    })
   }
   if (like === 0) { // Si il s'agit d'annuler un like / dislike
     Sauce.findOne({
